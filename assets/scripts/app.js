@@ -4,14 +4,25 @@ const form = document.querySelector('#new-post form');
 const fetchButton = document.querySelector('#available-posts button');
 
 async function sendHttpRequest(method, url, data) {
-  const response = await fetch(url, {
-    method,
-    body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  return await response.json();
+  try {
+    const response = await fetch(url, {
+      method,
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (response.status >= 200 && response.status < 300) {
+      return await response.json();
+    } else {
+      const errorData = await response.json();
+      console.error(errorData);
+      throw new Error('Something went wrong on the server!');
+    }
+  } catch (error) {
+    console.error(error);
+    throw new Error('Network error!');
+  }
 }
 
 async function fetchPosts() {
@@ -40,6 +51,9 @@ async function createPost(title, content) {
     body: content,
     userId,
   };
+
+  /* const fd = new FormData(form);
+  fd.append('userdId', userId) */
 
   sendHttpRequest('POST', 'https://jsonplaceholder.typicode.com/posts', post);
 }
